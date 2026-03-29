@@ -1,67 +1,73 @@
 # Image Background Remover
 
-Remove image backgrounds with one click. Built with Cloudflare Workers and Remove.bg API.
+Remove image backgrounds with one click. Built with Next.js, Tailwind CSS, and Remove.bg API.
 
 ## Features
 
 - 🖼️ Upload or drag & drop images
 - ✂️ One-click background removal
 - ⬇️ Download result as PNG
-- 🚀 Fast processing via Cloudflare Workers
 - 💾 No data stored - all in memory
 
 ## Setup
 
-### 1. Configure Remove.bg API Key
+### 1. Clone the repository
 
-Edit `wrangler.toml` and add your Remove.bg API key:
+```bash
+git clone https://github.com/HaiZi666/image-background-remover.git
+cd image-background-remover
+```
 
-```toml
-[vars]
-REMOVE_BG_API_KEY = "your-api-key-here"
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure Remove.bg API Key
+
+Create a `.env.local` file in the root directory:
+
+```env
+REMOVE_BG_API_KEY=your-api-key-here
+NEXT_PUBLIC_API_URL=http://localhost:3000/api/remove-bg
 ```
 
 Get your API key at: https://www.remove.bg/api
 
-### 2. Deploy Cloudflare Worker
+### 4. Run the development server
 
 ```bash
-npm install
-npx wrangler deploy
+npm run dev
 ```
 
-Note the Worker URL after deployment.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 3. Update Frontend
+## Deployment
 
-Edit `public/app.js` and replace the `API_URL` with your Worker URL:
+### Using Vercel (Recommended)
 
-```javascript
-const API_URL = 'https://your-worker.workers.dev/api/remove-bg';
-```
+1. Push your code to GitHub
+2. Import project on Vercel
+3. Add environment variable `REMOVE_BG_API_KEY`
+4. Deploy!
 
-### 4. Deploy Frontend
-
-Deploy the `public/` folder to Cloudflare Pages:
+### Using Docker
 
 ```bash
-# Using Cloudflare Pages dashboard
-# Or CLI: npx wrangler pages deploy public
+docker build -t image-bg-remover .
+docker run -p 3000:3000 --env-file .env.local image-bg-remover
 ```
-
-Or simply open `public/index.html` directly in a browser for local testing.
 
 ## Tech Stack
 
-- **Frontend**: Vanilla HTML/JS + TailwindCSS
-- **Backend**: Cloudflare Worker
+- **Framework**: Next.js 14 (App Router)
+- **Styling**: Tailwind CSS
 - **API**: Remove.bg
 
 ## Cost
 
 - **Remove.bg**: 50 free requests/month, then $0.20/request
-- **Cloudflare Pages**: Free
-- **Cloudflare Worker**: Free (100,000 requests/day)
 
 ## License
 

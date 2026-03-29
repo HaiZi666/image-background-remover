@@ -1,6 +1,0 @@
-name = "image-background-remover"
-main = "src/api/remove-bg.js"
-compatibility_date = "2024-01-01"
-
-[vars]
-REMOVE_BG_API_KEY = ""  # TODO: Set your Remove.bg API key here
