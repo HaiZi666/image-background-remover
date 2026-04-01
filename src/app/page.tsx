@@ -3,10 +3,11 @@
 import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
 
-// API URL - replace with your deployed Worker URL
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://your-worker.workers.dev/api/remove-bg";
-
 type ProcessingState = "idle" | "loading" | "success" | "error";
+
+// Remove.bg API - using direct call from browser
+const REMOVE_BG_API_KEY = process.env.NEXT_PUBLIC_REMOVE_BG_API_KEY || "";
+const REMOVE_BG_API_URL = "https://api.remove.bg/v1.0/removebg";
 
 export default function Home() {
   const [image, setImage] = useState<string | null>(null);
@@ -76,22 +77,47 @@ export default function Home() {
     setError("");
 
     try {
-      const response = await fetch(API_URL, {
+      // Convert base64 to binary
+      const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      // Create FormData for Remove.bg API
+      const formData = new FormData();
+      const blob = new Blob([bytes], { type: "image/png" });
+      formData.append("image_file", blob, "image.png");
+      formData.append("size", "auto");
+
+      // Call Remove.bg directly from browser
+      const response = await fetch(REMOVE_BG_API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image }),
+        headers: {
+          "X-Api-Key": REMOVE_BG_API_KEY,
+        },
+        body: formData,
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        setResult(data.result);
-        setState("success");
-      } else {
-        setError(data.error || "Failed to remove background.");
+      if (!response.ok) {
+        const errorText = await response.text();
+        setError(`Remove.bg API error: ${errorText}`);
         setState("error");
+        return;
       }
-    } catch {
+
+      // Get the result as blob
+      const resultBlob = await response.blob();
+      const resultBuffer = await resultBlob.arrayBuffer();
+
+      // Convert to base64
+      const resultArray = Array.from(new Uint8Array(resultBuffer));
+      const resultBase64 = btoa(String.fromCharCode(...resultArray));
+
+      setResult(`data:image/png;base64,${resultBase64}`);
+      setState("success");
+    } catch (err) {
       setError("Network error. Please check your connection.");
       setState("error");
     }
